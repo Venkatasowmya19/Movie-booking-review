@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Booking Confirmed #{{ booking.booking_reference }} | CineSphere{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+    <!-- Success Header -->
+    <div class="text-center mb-4">
+        <div class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-25 text-success rounded-circle p-3 mb-3 border border-success border-opacity-50">
+            <i class="bi bi-check-circle-fill fs-1"></i>
+        </div>
+        <h1 class="h2 text-white fw-bold mb-2">Booking Confirmed!</h1>
+        <p class="text-secondary">Your cinema tickets have been reserved. Please present your booking reference upon arrival.</p>
+    </div>
+
+    <!-- Cinema E-Ticket Stub -->
+    <div class="ticket-wrapper">
+        <!-- Top Golden Header -->
+        <div class="ticket-header">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-film fs-3"></i>
+                <h3 class="brand-font">CineSphere E-Ticket</h3>
+            </div>
+            <div class="ticket-ref-badge">
+                #{{ booking.booking_reference }}
+            </div>
+        </div>
+
+        <!-- Ticket Content -->
+        <div class="ticket-body">
+            <div class="row align-items-center g-4 mb-3">
+                <div class="col-sm-4 text-center text-sm-start">
+                    <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="img-fluid rounded shadow" style="max-height: 180px; object-fit: cover;">
+                </div>
+                <div class="col-sm-8">
+                    <span class="badge bg-warning text-dark fw-bold mb-1">{{ movie.genre }}</span>
+                    <h3 class="text-white mb-2">{{ movie.title }}</h3>
+                    <p class="text-secondary small mb-2">
+                        <i class="bi bi-clock me-1 text-warning"></i>{{ movie.duration_formatted }}
+                    </p>
+                    <div class="p-2 rounded bg-dark border border-secondary text-light small">
+                        <div><strong>Screen:</strong> {{ showtime.screen_number }}</div>
+                        <div><strong>Date:</strong> {{ showtime.show_date|date:"l, F d, Y" }}</div>
+                        <div><strong>Time:</strong> {{ showtime.show_time|time:"g:i A" }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Perforated Line Effect -->
+            <div class="ticket-perforation"></div>
+
+            <!-- Seats & Customer Information -->
+            <div class="row g-3 py-2">
+                <div class="col-md-6">
+                    <h6 class="text-secondary text-uppercase small letter-spacing-1 mb-1">Customer Information</h6>
+                    <div class="text-white fw-semibold">{{ booking.customer_name }}</div>
+                    <div class="text-secondary small">{{ booking.customer_email }}</div>
+                    <div class="text-secondary small">{{ booking.customer_phone }}</div>
+                </div>
+
+                <div class="col-md-6">
+                    <h6 class="text-secondary text-uppercase small letter-spacing-1 mb-1">Reserved Seats ({{ booking.seat_count }})</h6>
+                    <div class="d-flex flex-wrap gap-1 mb-2">
+                        {% for seat in seats %}
+                            <span class="seat-pill fs-6 px-3 py-1">
+                                <i class="bi bi-ticket-perforated-fill me-1"></i>{{ seat }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                    <div class="text-secondary small">
+                        <strong>Total Amount Paid:</strong> 
+                        <span class="text-warning fw-bold fs-5">${{ booking.total_paid|floatformat:2 }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Barcode Graphic Simulation -->
+            <div class="mt-4 pt-3 border-top border-secondary text-center">
+                <div class="barcode-simulation">
+                    ||| | |||| | |||||| || | |||| ||||| ||| ||| |
+                </div>
+                <span class="text-secondary small d-block mt-1 font-monospace">{{ booking.booking_reference }} • SECURE CINEMA TICKET</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="text-center mt-4 d-flex justify-content-center gap-3 flex-wrap">
+        <button id="btn-print-ticket" class="btn btn-cinema-gold">
+            <i class="bi bi-printer-fill me-1"></i> Print / Save Ticket
+        </button>
+        <a href="{% url 'movie_list' %}" class="btn btn-cinema-outline">
+            <i class="bi bi-film me-1"></i> Explore More Movies
+        </a>
+        <a href="{% url 'movie_detail' movie.pk %}#reviews-section" class="btn btn-cinema-outline">
+            <i class="bi bi-pencil-square me-1"></i> Rate This Movie
+        </a>
+    </div>
+
+</div>
+{% endblock %}

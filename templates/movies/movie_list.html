@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}All Movies | CineSphere{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Header & Controls -->
+    <div class="row align-items-center mb-4 g-3">
+        <div class="col-md-6">
+            <h1 class="h2 text-white mb-1">Browse All Movies</h1>
+            <p class="text-secondary small mb-0">Explore our complete catalog of theatrical screenings and premieres.</p>
+        </div>
+
+        <div class="col-md-6">
+            <form action="{% url 'movie_list' %}" method="GET" class="d-flex flex-wrap gap-2 justify-content-md-end">
+                <input type="hidden" name="genre" value="{{ selected_genre }}">
+                <div class="input-group" style="max-width: 320px;">
+                    <input type="text" name="q" class="form-control cinema-search-input" placeholder="Search movies..." value="{{ query }}">
+                    <button type="submit" class="btn btn-cinema-gold">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+
+                <select name="sort" class="form-select w-auto" onchange="this.form.submit()">
+                    <option value="latest" {% if sort == 'latest' %}selected{% endif %}>Latest Releases</option>
+                    <option value="rating" {% if sort == 'rating' %}selected{% endif %}>Top Rated</option>
+                    <option value="title" {% if sort == 'title' %}selected{% endif %}>Title (A-Z)</option>
+                </select>
+            </form>
+        </div>
+    </div>
+
+    <!-- Genre Filter Pills -->
+    <div class="filter-pill-container mb-4">
+        <a href="?genre=all{% if query %}&q={{ query }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" class="filter-pill {% if selected_genre == 'all' or not selected_genre %}active{% endif %}">
+            All Genres
+        </a>
+        {% for g in genres %}
+            <a href="?genre={{ g }}{% if query %}&q={{ query }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" class="filter-pill {% if selected_genre|lower == g|lower %}active{% endif %}">
+                {{ g }}
+            </a>
+        {% endfor %}
+    </div>
+
+    <!-- Movies Grid -->
+    <div class="row g-4">
+        {% for movie in movies %}
+            <div class="col-xl-3 col-lg-4 col-md-6">
+                <div class="movie-card">
+                    <div class="movie-poster-wrapper">
+                        <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="movie-poster-img" loading="lazy">
+                        
+                        <!-- Rating Badge -->
+                        <div class="movie-rating-badge">
+                            <i class="bi bi-star-fill"></i>
+                            {% if movie.computed_rating %}
+                                <span>{{ movie.computed_rating|floatformat:1 }}</span>
+                            {% else %}
+                                <span>New</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Genre Badge -->
+                        <span class="movie-genre-badge">{{ movie.genre }}</span>
+                    </div>
+
+                    <div class="movie-card-body">
+                        <h3 class="movie-title fs-5">
+                            <a href="{% url 'movie_detail' movie.pk %}" class="text-white text-decoration-none">
+                                {{ movie.title }}
+                            </a>
+                        </h3>
+
+                        <div class="movie-meta-info small">
+                            <span><i class="bi bi-clock me-1 text-warning"></i>{{ movie.duration_formatted }}</span>
+                            <span><i class="bi bi-calendar3 me-1 text-warning"></i>{{ movie.release_date|date:"Y" }}</span>
+                        </div>
+
+                        <p class="movie-desc-preview small">{{ movie.description }}</p>
+
+                        <div class="movie-card-footer">
+                            <a href="{% url 'movie_detail' movie.pk %}" class="btn btn-cinema-gold btn-sm w-100">
+                                <i class="bi bi-ticket-perforated me-1"></i> View Showtimes
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 py-5 text-center">
+                <div class="py-5" style="background: var(--bg-card); border-radius: var(--radius-xl); border: 1px dashed var(--border-subtle);">
+                    <i class="bi bi-film fs-1 text-secondary mb-3 d-block"></i>
+                    <h4 class="text-white">No Movies Found</h4>
+                    <p class="text-secondary">Try adjusting your search terms or genre filter.</p>
+                    <a href="{% url 'movie_list' %}" class="btn btn-cinema-gold">View All Movies</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

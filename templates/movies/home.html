@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}CineSphere | Movies, Showtimes & Community Reviews{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Hero Spotlight Banner -->
+    {% if hero_movie %}
+    <div class="hero-banner">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <span class="hero-tag">
+                    <i class="bi bi-fire text-warning"></i> Premiering Now • High Community Rating
+                </span>
+                <h1 class="hero-title">{{ hero_movie.title }}</h1>
+                <p class="hero-desc">{{ hero_movie.description|truncatewords:32 }}</p>
+
+                <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
+                    <a href="{% url 'movie_detail' hero_movie.pk %}" class="btn btn-cinema-gold">
+                        <i class="bi bi-ticket-perforated-fill"></i> View Showtimes & Book
+                    </a>
+                    <a href="{% url 'movie_detail' hero_movie.pk %}#reviews-section" class="btn btn-cinema-outline">
+                        <i class="bi bi-star-fill text-warning"></i> Read Community Reviews
+                    </a>
+                </div>
+
+                <!-- Hero stats metrics -->
+                <div class="hero-stats">
+                    <div class="hero-stat-item">
+                        <h4>{{ total_movies }}</h4>
+                        <p>Now Showing</p>
+                    </div>
+                    <div class="hero-stat-item">
+                        <h4>{{ total_showtimes }}</h4>
+                        <p>Daily Screenings</p>
+                    </div>
+                    <div class="hero-stat-item">
+                        <h4>{{ total_reviews }}</h4>
+                        <p>User Reviews</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5 d-none d-lg-flex justify-content-center">
+                <div style="position: relative; max-width: 320px; width: 100%;">
+                    <div class="movie-poster-wrapper shadow-lg" style="border-radius: var(--radius-lg); border: 2px solid var(--border-gold);">
+                        <img src="{{ hero_movie.poster_url }}" alt="{{ hero_movie.title }}" class="movie-poster-img">
+                        <div class="movie-rating-badge">
+                            <i class="bi bi-star-fill"></i>
+                            <span>{{ hero_movie.computed_rating|default:"5.0"|floatformat:1 }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Filter & Search Section -->
+    <div class="d-md-flex align-items-center justify-content-between mb-4 gap-3">
+        <div>
+            <h2 class="h3 text-white mb-1">Now Showing in Theatres</h2>
+            <p class="text-secondary small mb-0">Select a film to browse showtimes, reserve seats on our interactive grid, and see ratings.</p>
+        </div>
+
+        <!-- Filter Form -->
+        <form action="{% url 'home' %}" method="GET" class="mt-3 mt-md-0 d-flex gap-2">
+            <input type="hidden" name="genre" value="{{ selected_genre }}">
+            <div class="input-group">
+                <input type="text" name="q" class="form-control cinema-search-input" placeholder="Search by title..." value="{{ query }}">
+                <button type="submit" class="btn btn-cinema-gold">
+                    <i class="bi bi-search"></i>
+                </button>
+                {% if query or selected_genre != 'all' %}
+                    <a href="{% url 'home' %}" class="btn btn-outline-secondary" title="Clear Filters">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Genre Filter Pills -->
+    <div class="filter-pill-container">
+        <a href="?genre=all{% if query %}&q={{ query }}{% endif %}" class="filter-pill {% if selected_genre == 'all' or not selected_genre %}active{% endif %}">
+            All Genres
+        </a>
+        {% for g in genres %}
+            <a href="?genre={{ g }}{% if query %}&q={{ query }}{% endif %}" class="filter-pill {% if selected_genre|lower == g|lower %}active{% endif %}">
+                {{ g }}
+            </a>
+        {% endfor %}
+    </div>
+
+    <!-- Movies Grid -->
+    <div class="row g-4 mb-5">
+        {% for movie in movies %}
+            <div class="col-xl-4 col-md-6">
+                <div class="movie-card">
+                    <div class="movie-poster-wrapper">
+                        <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="movie-poster-img" loading="lazy">
+                        
+                        <!-- Rating Badge -->
+                        <div class="movie-rating-badge">
+                            <i class="bi bi-star-fill"></i>
+                            {% if movie.computed_rating %}
+                                <span>{{ movie.computed_rating|floatformat:1 }}</span>
+                            {% else %}
+                                <span>New</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Genre Badge -->
+                        <span class="movie-genre-badge">{{ movie.genre }}</span>
+                    </div>
+
+                    <div class="movie-card-body">
+                        <h3 class="movie-title">
+                            <a href="{% url 'movie_detail' movie.pk %}" class="text-white text-decoration-none">
+                                {{ movie.title }}
+                            </a>
+                        </h3>
+
+                        <div class="movie-meta-info">
+                            <span><i class="bi bi-clock me-1 text-warning"></i>{{ movie.duration_formatted }}</span>
+                            <span><i class="bi bi-calendar3 me-1 text-warning"></i>{{ movie.release_date|date:"M d, Y" }}</span>
+                            <span><i class="bi bi-chat-quote me-1 text-warning"></i>{{ movie.num_reviews }} review{{ movie.num_reviews|pluralize }}</span>
+                        </div>
+
+                        <p class="movie-desc-preview">{{ movie.description }}</p>
+
+                        <div class="movie-card-footer">
+                            <a href="{% url 'movie_detail' movie.pk %}" class="btn btn-cinema-gold btn-sm flex-grow-1">
+                                <i class="bi bi-ticket-perforated me-1"></i> Book Ticket
+                            </a>
+                            <a href="{% url 'movie_detail' movie.pk %}#reviews-section" class="btn btn-cinema-outline btn-sm" title="View Reviews">
+                                <i class="bi bi-star text-warning"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 py-5 text-center">
+                <div class="py-5" style="background: var(--bg-card); border-radius: var(--radius-xl); border: 1px dashed var(--border-subtle);">
+                    <i class="bi bi-film fs-1 text-secondary mb-3 d-block"></i>
+                    <h4 class="text-white">No Movies Found</h4>
+                    <p class="text-secondary">We could not find any films matching your search criteria.</p>
+                    <a href="{% url 'home' %}" class="btn btn-cinema-gold">Reset Filters</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Community Reviews Showcase -->
+    {% if recent_reviews %}
+    <div class="mt-5 pt-3">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <h3 class="text-white mb-1"><i class="bi bi-chat-heart-fill text-danger me-2"></i>Community Reviews</h3>
+                <p class="text-secondary small mb-0">What our audience is saying about current theatrical releases.</p>
+            </div>
+            <a href="{% url 'reviews' %}" class="btn btn-cinema-outline btn-sm">
+                View All Reviews <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+
+        <div class="row g-3">
+            {% for review in recent_reviews %}
+                <div class="col-md-6 col-lg-3">
+                    <div class="review-card h-100 d-flex flex-direction-column">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge bg-dark border border-secondary text-warning">
+                                {% for i in "12345"|make_list %}
+                                    {% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}
+                                {% endfor %}
+                            </span>
+                            <span class="text-secondary small">{{ review.created_date|date:"M d" }}</span>
+                        </div>
+                        <h6 class="text-white mb-2 text-truncate" title="{{ review.movie.title }}">
+                            <a href="{% url 'movie_detail' review.movie.pk %}" class="text-white">{{ review.movie.title }}</a>
+                        </h6>
+                        <p class="text-secondary small flex-grow-1 mb-3 fst-italic">"{{ review.comment|truncatechars:110 }}"</p>
+                        <div class="d-flex align-items-center gap-2 border-top border-secondary pt-2">
+                            <i class="bi bi-person-circle text-secondary fs-5"></i>
+                            <span class="text-light small fw-bold">{{ review.reviewer_name }}</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
